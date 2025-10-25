@@ -1,0 +1,52 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: homelab-apps
+  namespace: argocd
+spec:
+  generators:
+    - list:
+        elements:
+          - name: traefik
+            namespace: traefik
+            chart: traefik
+            repoURL: https://traefik.github.io/charts
+            version: 37.2.0
+
+          - name: cert-manager
+            namespace: cert-manager
+            chart: cert-manager
+            repoURL: https://charts.jetstack.io
+            version: v1.16.1
+
+  template:
+    metadata:
+      name: '{{name}}'
+    spec:
+      project: default
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: '{{namespace}}'
+      sources:
+        # 1️⃣ Helm chart
+        - repoURL: '{{repoURL}}'
+          chart: '{{chart}}'
+          targetRevision: '{{version}}'
+          helm:
+            valueFiles:
+              - $values/apps/{{name}}/values.yaml
+
+        # 2️⃣ Git source for extra manifests (only used if prereqs defined)
+        - repoURL: https://github.com/tomas-rojo/homelab-gitops.git
+          targetRevision: main
+          path: '{{prereqs}}'
+          directory:
+            recurse: true
+          ref: values
+
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
