@@ -27,26 +27,22 @@ spec:
       destination:
         server: https://kubernetes.default.svc
         namespace: '{{namespace}}'
-      sources:
-        # 1️⃣ Helm chart
-        - repoURL: '{{repoURL}}'
-          chart: '{{chart}}'
-          targetRevision: '{{version}}'
-          helm:
-            valueFiles:
-              - $values/apps/{{name}}/values.yaml
-
-        # 2️⃣ Git source for extra manifests (only used if prereqs defined)
-        - repoURL: https://github.com/tomas-rojo/homelab-gitops.git
-          targetRevision: main
-          path: '{{prereqs}}'
-          directory:
-            recurse: true
-          ref: values
-
       syncPolicy:
         automated:
           prune: true
           selfHeal: true
         syncOptions:
           - CreateNamespace=true
+  templatePatch: |
+    spec:
+      sources:
+        - repoURL: '{{repoURL}}'
+          chart: '{{chart}}'
+          targetRevision: '{{version}}'
+          helm:
+            releaseName: '{{name}}'
+            valueFiles:
+              - $values/apps/{{name}}/values.yaml
+        - repoURL: https://github.com/tomas-rojo/homelab-gitops.git
+          targetRevision: main
+          ref: values
