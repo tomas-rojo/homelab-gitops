@@ -1,9 +1,7 @@
-ports:
-  web:
-    redirectTo:
-      port: websecure
 ingressRoute:
   dashboard:
     enabled: true
     entryPoints:
       - web
+service:
+  type: ClusterIP
