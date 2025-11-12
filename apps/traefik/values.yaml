@@ -3,3 +3,5 @@ ingressRoute:
     enabled: true
     entryPoints:
       - web
+service:
+  type: ClusterIP
